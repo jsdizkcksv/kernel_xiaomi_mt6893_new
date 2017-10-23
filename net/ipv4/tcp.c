@@ -283,6 +283,7 @@
 #include <net/busy_poll.h>
 
 #include <perf_tracker_internal.h>
+#include <trace/events/tcp.h>
 
 int sysctl_tcp_min_tso_segs __read_mostly = 2;
 
@@ -2080,6 +2081,8 @@ void tcp_set_state(struct sock *sk, int state)
 
 	if (BPF_SOCK_OPS_TEST_FLAG(tcp_sk(sk), BPF_SOCK_OPS_STATE_CB_FLAG))
 		tcp_call_bpf_2arg(sk, BPF_SOCK_OPS_STATE_CB, oldstate, state);
+
+	trace_tcp_set_state(sk, oldstate, state);
 
 	switch (state) {
 	case TCP_ESTABLISHED:

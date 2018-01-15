@@ -4408,7 +4408,6 @@ static int if6_seq_open(struct inode *inode, struct file *file)
 }
 
 static const struct file_operations if6_fops = {
-	.owner		= THIS_MODULE,
 	.open		= if6_seq_open,
 	.read		= seq_read,
 	.llseek		= seq_lseek,

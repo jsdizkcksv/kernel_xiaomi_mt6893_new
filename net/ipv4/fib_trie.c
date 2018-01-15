@@ -2346,7 +2346,6 @@ static int fib_triestat_seq_open(struct inode *inode, struct file *file)
 }
 
 static const struct file_operations fib_triestat_fops = {
-	.owner	= THIS_MODULE,
 	.open	= fib_triestat_seq_open,
 	.read	= seq_read,
 	.llseek	= seq_lseek,
@@ -2533,7 +2532,6 @@ static int fib_trie_seq_open(struct inode *inode, struct file *file)
 }
 
 static const struct file_operations fib_trie_fops = {
-	.owner  = THIS_MODULE,
 	.open   = fib_trie_seq_open,
 	.read   = seq_read,
 	.llseek = seq_lseek,
@@ -2727,7 +2725,6 @@ static int fib_route_seq_open(struct inode *inode, struct file *file)
 }
 
 static const struct file_operations fib_route_fops = {
-	.owner  = THIS_MODULE,
 	.open   = fib_route_seq_open,
 	.read   = seq_read,
 	.llseek = seq_lseek,

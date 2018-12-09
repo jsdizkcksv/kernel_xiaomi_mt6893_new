@@ -16,7 +16,7 @@
 #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 
 #include <linux/uaccess.h>
-#include <linux/module.h>
+#include <linux/init.h>
 #include "evm.h"
 
 static struct dentry *evm_init_tpm;

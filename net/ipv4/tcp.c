@@ -2447,6 +2447,10 @@ int tcp_disconnect(struct sock *sk, int flags)
 	tp->dsack_dups = 0;
     tp->rack.mstamp = 0;
 	tp->rack.advanced = 0;
+	tp->syn_data_acked = 0;
+	tp->rx_opt.saw_tstamp = 0;
+	tp->rx_opt.dsack = 0;
+	tp->rx_opt.num_sacks = 0;
 
 
 	/* Clean up fastopen related fields */

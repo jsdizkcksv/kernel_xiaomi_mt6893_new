@@ -869,6 +869,10 @@ struct netdev_bpf {
 	};
 };
 
+/* Flags for ndo_xsk_wakeup. */
+#define XDP_WAKEUP_RX (1 << 0)
+#define XDP_WAKEUP_TX (1 << 1)
+
 #ifdef CONFIG_XFRM_OFFLOAD
 struct xfrmdev_ops {
 	int	(*xdo_dev_state_add) (struct xfrm_state *x);
@@ -1184,6 +1188,16 @@ struct xfrmdev_ops {
  * void (*ndo_xdp_flush)(struct net_device *dev);
  *	This function is used to inform the driver to flush a particular
  *	xdp tx queue. Must be called on same CPU as xdp_xmit.
+ * int (*ndo_xsk_wakeup)(struct net_device *dev, u32 queue_id, u32 flags);
+ *      This function is used to wake up the softirq, ksoftirqd or kthread
+ *	responsible for sending and/or receiving packets on a specific
+ *	queue id bound to an AF_XDP socket. The flags field specifies if
+ *	only RX, only Tx, or both should be woken up using the flags
+ *	XDP_WAKEUP_RX and XDP_WAKEUP_TX.
+ * struct devlink_port *(*ndo_get_devlink_port)(struct net_device *dev);
+ *	Get devlink port instance associated with a given netdev.
+ *	Called with a reference on the netdevice and devlink locks only,
+ *	rtnl_lock is not held.
  */
 struct net_device_ops {
 	int			(*ndo_init)(struct net_device *dev);
@@ -1371,6 +1385,10 @@ struct net_device_ops {
 						struct xdp_frame **xdp,
 						u32 flags);
 	void			(*ndo_xdp_flush)(struct net_device *dev);
+	int			(*ndo_xsk_wakeup)(struct net_device *dev,
+						  u32 queue_id, u32 flags);
+	struct devlink_port *	(*ndo_get_devlink_port)(struct net_device *dev);
+
 };
 
 /**

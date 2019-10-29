@@ -1372,6 +1372,9 @@ static const void *flow_keys_hash_start(const struct flow_keys *flow)
 static inline size_t flow_keys_hash_length(const struct flow_keys *flow)
 {
 	size_t len = offsetof(typeof(*flow), addrs) - FLOW_KEYS_HASH_OFFSET;
+	/* flow.addrs MUST be the last member in struct flow_keys because
+	 * different L3 protocols have different address length
+	 */
 
 	switch (flow->control.addr_type) {
 	case FLOW_DISSECTOR_KEY_IPV4_ADDRS:
@@ -1417,6 +1420,9 @@ __be32 flow_get_u32_dst(const struct flow_keys *flow)
 }
 EXPORT_SYMBOL(flow_get_u32_dst);
 
+/* Sort the source and destination IP (and the ports if the IP are the same),
+ * to have consistent hash within the two directions
+ */
 static inline void __flow_hash_consistentify(struct flow_keys *keys)
 {
 	int addr_diff, i;

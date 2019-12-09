@@ -3,6 +3,7 @@
 #include <linux/hash.h>
 #include <linux/bpf.h>
 #include <linux/filter.h>
+#include <linux/ftrace.h>
 
 /* dummy _ops. The verifier will operate on target program's ops. */
 const struct bpf_verifier_ops bpf_extension_verifier_ops = {
@@ -75,6 +76,60 @@ out:
 	return tr;
 }
 
+static int is_ftrace_location(void *ip)
+{
+	long addr;
+
+	addr = ftrace_location((long)ip);
+	if (!addr)
+		return 0;
+	if (WARN_ON_ONCE(addr != (long)ip))
+		return -EFAULT;
+	return 1;
+}
+
+static int unregister_fentry(struct bpf_trampoline *tr, void *old_addr)
+{
+	void *ip = tr->func.addr;
+	int ret;
+
+	if (tr->func.ftrace_managed)
+		ret = unregister_ftrace_direct((long)ip, (long)old_addr);
+	else
+		ret = bpf_arch_text_poke(ip, BPF_MOD_CALL, old_addr, NULL);
+	return ret;
+}
+
+static int modify_fentry(struct bpf_trampoline *tr, void *old_addr, void *new_addr)
+{
+	void *ip = tr->func.addr;
+	int ret;
+
+	if (tr->func.ftrace_managed)
+		ret = modify_ftrace_direct((long)ip, (long)old_addr, (long)new_addr);
+	else
+		ret = bpf_arch_text_poke(ip, BPF_MOD_CALL, old_addr, new_addr);
+	return ret;
+}
+
+/* first time registering */
+static int register_fentry(struct bpf_trampoline *tr, void *new_addr)
+{
+	void *ip = tr->func.addr;
+	int ret;
+
+	ret = is_ftrace_location(ip);
+	if (ret < 0)
+		return ret;
+	tr->func.ftrace_managed = ret;
+
+	if (tr->func.ftrace_managed)
+		ret = register_ftrace_direct((long)ip, (long)new_addr);
+	else
+		ret = bpf_arch_text_poke(ip, BPF_MOD_CALL, NULL, new_addr);
+	return ret;
+}
+
 /* Each call __bpf_prog_enter + call bpf_func + call __bpf_prog_exit is ~50
  * bytes on x86.  Pick a number to fit into PAGE_SIZE / 2
  */
@@ -93,8 +148,7 @@ static int bpf_trampoline_update(struct bpf_trampoline *tr)
 	int err;
 
 	if (fentry_cnt + fexit_cnt == 0) {
-		err = bpf_arch_text_poke(tr->func.addr, BPF_MOD_CALL,
-					 old_image, NULL);
+		err = unregister_fentry(tr, old_image);
 		tr->selector = 0;
 		goto out;
 	}
@@ -130,12 +184,10 @@ static int bpf_trampoline_update(struct bpf_trampoline *tr)
 
 	if (tr->selector)
 		/* progs already running at this address */
-		err = bpf_arch_text_poke(tr->func.addr, BPF_MOD_CALL,
-					 old_image, new_image);
+		err = modify_fentry(tr, old_image, new_image);
 	else
 		/* first time registering */
-		err = bpf_arch_text_poke(tr->func.addr, BPF_MOD_CALL, NULL,
-					 new_image);
+		err = register_fentry(tr, new_image);
 	if (err)
 		goto out;
 	tr->selector++;

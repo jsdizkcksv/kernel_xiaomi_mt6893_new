@@ -1342,39 +1342,7 @@ int flush_old_exec(struct linux_binprm * bprm)
 	 * undergoing exec(2).
 	 */
 	do_close_on_exec(me->files);
-	return 0;
 
-out_unlock:
-	mutex_unlock(&me->signal->exec_update_mutex);
-out:
-	return retval;
-}
-EXPORT_SYMBOL(flush_old_exec);
-
-void would_dump(struct linux_binprm *bprm, struct file *file)
-{
-	struct inode *inode = file_inode(file);
-	if (inode_permission2(file->f_path.mnt, inode, MAY_READ) < 0) {
-		struct user_namespace *old, *user_ns;
-		bprm->interp_flags |= BINPRM_FLAGS_ENFORCE_NONDUMP;
-
-		/* Ensure mm->user_ns contains the executable */
-		user_ns = old = bprm->mm->user_ns;
-		while ((user_ns != &init_user_ns) &&
-		       !privileged_wrt_inode_uidgid(user_ns, inode))
-			user_ns = user_ns->parent;
-
-		if (old != user_ns) {
-			bprm->mm->user_ns = get_user_ns(user_ns);
-			put_user_ns(old);
-		}
-	}
-}
-EXPORT_SYMBOL(would_dump);
-
-void setup_new_exec(struct linux_binprm * bprm)
-{
-	struct task_struct *me = current;
 	/*
 	 * Once here, prepare_binrpm() will not be called any more, so
 	 * the final state of setuid/setgid/fscaps can be merged into the
@@ -1397,8 +1365,6 @@ void setup_new_exec(struct linux_binprm * bprm)
 			current->signal->rlim[RLIMIT_STACK].rlim_cur = _STK_LIM;
 	}
 
-	arch_pick_mmap_layout(me->mm);
-
 	me->sas_ss_sp = me->sas_ss_size = 0;
 
 	/*
@@ -1413,15 +1379,8 @@ void setup_new_exec(struct linux_binprm * bprm)
 	else
 		set_dumpable(current->mm, SUID_DUMP_USER);
 
-	arch_setup_new_exec();
 	perf_event_exec();
 	__set_task_comm(me, kbasename(bprm->filename), true);
-
-	/* Set the new mm task size. We have to do that late because it may
-	 * depend on TIF_32BIT which is only updated in flush_thread() on
-	 * some architectures like powerpc
-	 */
-	me->mm->task_size = TASK_SIZE;
 
 	/* An exec changes our domain. We are no longer part of the thread
 	   group */
@@ -1432,7 +1391,50 @@ void setup_new_exec(struct linux_binprm * bprm)
 	 * install the new credentials for this executable
 	 */
 	security_bprm_committing_creds(bprm);
+	return 0;
 
+out_unlock:
+	mutex_unlock(&me->signal->exec_update_mutex);
+out:
+	return retval;
+}
+EXPORT_SYMBOL(flush_old_exec);
+
+void would_dump(struct linux_binprm *bprm, struct file *file)
+{
+	struct inode *inode = file_inode(file);
+	if (inode_permission(inode, MAY_READ) < 0) {
+		struct user_namespace *old, *user_ns;
+		bprm->interp_flags |= BINPRM_FLAGS_ENFORCE_NONDUMP;
+
+		/* Ensure mm->user_ns contains the executable */
+		user_ns = old = bprm->mm->user_ns;
+		while ((user_ns != &init_user_ns) &&
+		       !privileged_wrt_inode_uidgid(user_ns, inode))
+			user_ns = user_ns->parent;
+
+		if (old != user_ns) {
+			bprm->mm->user_ns = get_user_ns(user_ns);
+			put_user_ns(old);
+		}
+	}
+}
+EXPORT_SYMBOL(would_dump);
+
+void setup_new_exec(struct linux_binprm * bprm)
+{
+	/* Setup things that can depend upon the personality */
+	struct task_struct *me = current;
+
+	arch_pick_mmap_layout(me->mm);
+
+	arch_setup_new_exec();
+
+	/* Set the new mm task size. We have to do that late because it may
+	 * depend on TIF_32BIT which is only updated in flush_thread() on
+	 * some architectures like powerpc
+	 */
+	me->mm->task_size = TASK_SIZE;
 	commit_creds(bprm->cred);
 	bprm->cred = NULL;
 

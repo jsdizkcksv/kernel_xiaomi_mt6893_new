@@ -2544,4 +2544,5 @@ static inline int sk_get_rmem0(const struct sock *sk, const struct proto *proto)
 	return *proto->sysctl_rmem;
 }
 
+int sock_bindtoindex(struct sock *sk, int ifindex);
 #endif	/* _SOCK_H */

@@ -1477,6 +1477,10 @@ int prepare_bprm_creds(struct linux_binprm *bprm)
 
 static void free_bprm(struct linux_binprm *bprm)
 {
+	if (bprm->mm) {
+		acct_arg_size(bprm, 0);
+		mmput(bprm->mm);
+	}
 	free_arg_pages(bprm);
 	if (bprm->cred) {
 		mutex_unlock(&current->signal->cred_guard_mutex);
@@ -1514,6 +1518,10 @@ static struct linux_binprm *alloc_bprm(int fd, struct filename *filename)
 		bprm->filename = bprm->fdpath;
 	}
 	bprm->interp = bprm->filename;
+
+	retval = bprm_mm_init(bprm);
+	if (retval)
+		goto out_free;
 	return bprm;
 
 out_free:
@@ -1831,10 +1839,6 @@ static int do_execveat_common(int fd, struct filename *filename,
 	    close_on_exec(fd, rcu_dereference_raw(current->files->fdt)))
 		bprm->interp_flags |= BINPRM_FLAGS_PATH_INACCESSIBLE;
 
-	retval = bprm_mm_init(bprm);
-	if (retval)
-		goto out_unmark;
-
 	if (bprm->argc == 0)
 		pr_warn_once("process '%s' launched '%s' with NULL argv: empty string added\n",
 			     current->comm, bprm->filename);
@@ -1899,10 +1903,6 @@ out:
 	 */
 	if (bprm->point_of_no_return && !fatal_signal_pending(current))
 		force_sigsegv(SIGSEGV, current);
-	if (bprm->mm) {
-		acct_arg_size(bprm, 0);
-		mmput(bprm->mm);
-	}
 
 out_unmark:
 	current->fs->in_exec = 0;

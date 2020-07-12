@@ -1776,44 +1776,16 @@ static int exec_binprm(struct linux_binprm *bprm)
 /*
  * sys_execve() executes a new program.
  */
-static int do_execveat_common(int fd, struct filename *filename,
-			      struct user_arg_ptr argv,
-			      struct user_arg_ptr envp,
-			      int flags)
+static int bprm_execve(struct linux_binprm *bprm,
+		       int fd, struct filename *filename, int flags)
 {
-	struct linux_binprm *bprm;
 	struct file *file;
 	struct files_struct *displaced;
 	int retval;
 
-	if (IS_ERR(filename))
-		return PTR_ERR(filename);
-
-	/*
-	 * We move the actual failure in case of RLIMIT_NPROC excess from
-	 * set*uid() to execve() because too many poorly written programs
-	 * don't check setuid() return code.  Here we additionally recheck
-	 * whether NPROC limit is still exceeded.
-	 */
-	if ((current->flags & PF_NPROC_EXCEEDED) &&
-	    atomic_read(&current_user()->processes) > rlimit(RLIMIT_NPROC)) {
-		retval = -EAGAIN;
-		goto out_ret;
-	}
-
-	/* We're below the limit (still or again), so we don't want to make
-	 * further execve() calls fail. */
-	current->flags &= ~PF_NPROC_EXCEEDED;
-
-	bprm = alloc_bprm(fd, filename);
-	if (IS_ERR(bprm)) {
-		retval = PTR_ERR(bprm);
-		goto out_ret;
-	}
-
 	retval = unshare_files(&displaced);
 	if (retval)
-		goto out_free;
+		return retval;
 
 	retval = prepare_bprm_creds(bprm);
 	if (retval)
@@ -1843,24 +1815,7 @@ static int do_execveat_common(int fd, struct filename *filename,
 		pr_warn_once("process '%s' launched '%s' with NULL argv: empty string added\n",
 			     current->comm, bprm->filename);
 
-	retval = prepare_arg_pages(bprm, argv, envp);
-	if (retval < 0)
-		goto out;
-
 	retval = prepare_binprm(bprm);
-	if (retval < 0)
-		goto out;
-
-	retval = copy_strings_kernel(1, &bprm->filename, bprm);
-	if (retval < 0)
-		goto out;
-
-	bprm->exec = bprm->p;
-	retval = copy_strings(bprm->envc, envp, bprm);
-	if (retval < 0)
-		goto out;
-
-	retval = copy_strings(bprm->argc, argv, bprm);
 	if (retval < 0)
 		goto out;
 
@@ -1888,8 +1843,6 @@ static int do_execveat_common(int fd, struct filename *filename,
 	membarrier_execve(current);
 	acct_update_integrals(current);
 	task_numa_free(current, false);
-	free_bprm(bprm);
-	putname(filename);
 	if (displaced)
 		put_files_struct(displaced);
 	return retval;
@@ -1911,6 +1864,61 @@ out_unmark:
 out_files:
 	if (displaced)
 		reset_files_struct(displaced);
+
+	return retval;
+}
+
+static int do_execveat_common(int fd, struct filename *filename,
+			      struct user_arg_ptr argv,
+			      struct user_arg_ptr envp,
+			      int flags)
+{
+	struct linux_binprm *bprm;
+	int retval;
+
+	if (IS_ERR(filename))
+		return PTR_ERR(filename);
+
+	/*
+	 * We move the actual failure in case of RLIMIT_NPROC excess from
+	 * set*uid() to execve() because too many poorly written programs
+	 * don't check setuid() return code.  Here we additionally recheck
+	 * whether NPROC limit is still exceeded.
+	 */
+	if ((current->flags & PF_NPROC_EXCEEDED) &&
+	    atomic_read(&current_user()->processes) > rlimit(RLIMIT_NPROC)) {
+		retval = -EAGAIN;
+		goto out_ret;
+	}
+
+	/* We're below the limit (still or again), so we don't want to make
+	 * further execve() calls fail. */
+	current->flags &= ~PF_NPROC_EXCEEDED;
+
+	bprm = alloc_bprm(fd, filename);
+	if (IS_ERR(bprm)) {
+		retval = PTR_ERR(bprm);
+		goto out_ret;
+	}
+
+	retval = prepare_arg_pages(bprm, argv, envp);
+	if (retval < 0)
+		goto out_free;
+
+	retval = copy_strings_kernel(1, &bprm->filename, bprm);
+	if (retval < 0)
+		goto out_free;
+	bprm->exec = bprm->p;
+
+	retval = copy_strings(bprm->envc, envp, bprm);
+	if (retval < 0)
+		goto out_free;
+
+	retval = copy_strings(bprm->argc, argv, bprm);
+	if (retval < 0)
+		goto out_free;
+
+	retval = bprm_execve(bprm, fd, filename, flags);
 out_free:
 	free_bprm(bprm);
 

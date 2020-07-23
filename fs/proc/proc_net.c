@@ -98,7 +98,7 @@ int seq_release_net(struct inode *ino, struct file *f)
 }
 EXPORT_SYMBOL_GPL(seq_release_net);
 
-int bpf_iter_init_seq_net(void *priv_data)
+int bpf_iter_init_seq_net(void *priv_data, struct bpf_iter_aux_info *aux)
 {
 #ifdef CONFIG_NET_NS
 	struct seq_net_private *p = priv_data;

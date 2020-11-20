@@ -101,7 +101,7 @@ static int tid_fd_revalidate(struct dentry *dentry, unsigned int flags)
 			struct file *file;
 
 			rcu_read_lock();
-			file = fcheck_files(files, fd);
+			file = files_lookup_fd_rcu(files, fd);
 			if (file) {
 				unsigned f_mode = file->f_mode;
 
@@ -232,7 +232,7 @@ static int proc_readfd_common(struct file *file, struct dir_context *ctx,
 		char name[PROC_NUMBUF];
 		int len;
 
-		if (!fcheck_files(files, fd))
+		if (!files_lookup_fd_rcu(files, fd))
 			continue;
 		rcu_read_unlock();
 

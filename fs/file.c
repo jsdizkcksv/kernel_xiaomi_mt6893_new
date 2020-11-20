@@ -1064,7 +1064,7 @@ SYSCALL_DEFINE3(dup3, unsigned int, oldfd, unsigned int, newfd, int, flags)
 
 	spin_lock(&files->file_lock);
 	err = expand_files(files, newfd);
-	file = fcheck(oldfd);
+	file = files_lookup_fd_locked(files, oldfd);
 	if (unlikely(!file))
 		goto Ebadf;
 	if (unlikely(err < 0)) {

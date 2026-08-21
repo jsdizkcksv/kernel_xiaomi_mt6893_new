@@ -1022,3 +1022,9 @@
 #define MDP_IMG1_IMG_DL_ASYNC2	46
 #define MDP_IMG1_IMG_DL_ASYNC3	47
 #define MDP_NR_CLK 48
+
+/* MT6893 (4.19) GPU clock IDs backported for gpufreq driver */
+#define CLK_TOP_MFGPLL		6
+#define CLK_TOP_MAINPLL_D5_D2	15
+#define CLK_TOP_MFG_SEL		210
+#define CLK_MFGCFG_BG3D		0

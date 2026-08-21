@@ -614,8 +614,27 @@ page_owner=on loop.max_part=7";
 		      <0 0x0800000c 0 0x0004>;
 	};
 
+	efuse: efuse@11c10000 {
+		compatible = "mediatek,devinfo";
+		reg = <0 0x11c10000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		efuse_segment: segment@78 {
+			reg = <0x78 0x4>;
+		};
+
+		efuse_ptpod22: ptpod22 {
+			reg = <0x120 0x4>;
+		};
+
+		efuse_fab_info4: fab_info4 {
+			reg = <0x218 0x4>;
+		};
+	};
+
 	topckgen: topckgen@10000000 {
-		compatible = "mediatek,topckgen", "syscon";
+		compatible = "mediatek,mt6893-topckgen", "syscon", "mediatek,topckgen";
 		reg = <0 0x10000000 0 0x1000>;
 		#clock-cells = <1>;
 	};
@@ -669,7 +688,7 @@ page_owner=on loop.max_part=7";
 	};
 
 	scpsys: scpsys@10001000 {
-		compatible = "mediatek,scpsys";
+		compatible = "mediatek,mt6893-scpsys", "syscon";
 		reg = <0 0x10001000 0 0x1000>,		/* infracfg_ao */
 			<0 0x10006000 0 0x1000>,	/* spm */
 			<0 0x10000000 0 0x1000>;	/* topckgen */
@@ -875,6 +894,12 @@ page_owner=on loop.max_part=7";
 		compatible = "mediatek,apirq";
 		reg = <0 0x1000b000 0 0x1000>;
 		interrupts = <GIC_SPI 212 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	apmixedsys_clk: syscon@1000C000 {
+		compatible = "mediatek,mt6893-apmixedsys", "syscon";
+		reg = <0 0x1000c000 0 0xe00>;
+		#clock-cells = <1>;
 	};
 
 	apmixed: apmixed@1000c000 {
@@ -3210,17 +3235,18 @@ page_owner=on loop.max_part=7";
 			"JOB",
 			"EVENT",
 			"PWR";
+		ged-supply = <&ged>;
 	};
 
 	gpufreq: gpufreq {
 		compatible = "mediatek,gpufreq";
 		clocks =
-			<&topckgen TOP_MUX_MFG>,
+			<&topckgen CLK_TOP_MFG_SEL>,
 			/* mfgpll_ck(1150MHz) */
-			<&topckgen TOP_MFGPLL_CK>,
+			<&topckgen CLK_TOP_MFGPLL>,
 			/* mainpll_d5_d2(218.4MHz) */
-			<&topckgen TOP_MAINPLL_D5_D2>,
-			<&g3d_config MFGCFG_BG3D>,
+			<&topckgen CLK_TOP_MAINPLL_D5_D2>,
+			<&mfgcfg_clk CLK_MFGCFG_BG3D>,
 			/* MFG0: MFG_ASYNC */
 			<&scpsys SCP_SYS_MFG0>,
 			/* MFG1: MFG_TOP */
@@ -3249,6 +3275,8 @@ page_owner=on loop.max_part=7";
 			"mtcmos_mfg_core7_8";
 			_vgpu-supply = <&mt6315_7_vbuck1>;
 			_vsram_gpu-supply = <&mt_pmic_vsram_others_ldo_reg>;
+		nvmem-cells = <&efuse_segment &efuse_ptpod22 &efuse_fab_info4>;
+		nvmem-cell-names = "efuse_segment_cell", "efuse_ptpod22_cell", "efuse_fab_info4_cell";
 	};
 
 	ged: ged {
@@ -3271,10 +3299,16 @@ page_owner=on loop.max_part=7";
 		reg = <0 0x13fbd000 0 0x1000>;
 	};
 
+	mfgcfg_clk: syscon@13fbf000 {
+		compatible = "mediatek,mt6893-mfgcfg", "syscon";
+		reg = <0 0x13fbf000 0 0x1000>;
+		pwr-regmap = <&scpsys>;
+		#clock-cells = <1>;
+	};
+
 	g3d_config: g3d_config@13fbf000 {
 		compatible = "mediatek,g3d_config", "syscon";
 		reg = <0 0x13fbf000 0 0x1000>;
-		#clock-cells = <1>;
 	};
 
 	devapc_ao_infra_peri_debug1@10023000  {

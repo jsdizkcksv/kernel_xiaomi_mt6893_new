@@ -1023,6 +1023,16 @@
 #define MDP_IMG1_IMG_DL_ASYNC3	47
 #define MDP_NR_CLK 48
 
+/* MT6893 (4.19) MM/MDP SMI clock IDs backported for SMI driver */
+#undef CLK_MM_SMI_COMMON
+#define CLK_MM_SMI_COMMON	48
+#define CLK_MM_SMI_GALS		49
+#define CLK_MM_SMI_INFRA	50
+#define CLK_MM_SMI_IOMMU	51
+#define CLK_MDP_SMI0		36
+#define CLK_MDP_SMI1		40
+#define CLK_MDP_SMI2		44
+
 /* MT6893 (4.19) GPU clock IDs backported for gpufreq driver */
 #define CLK_TOP_MFGPLL		6
 #define CLK_TOP_MAINPLL_D5_D2	15

@@ -4651,6 +4651,21 @@ page_owner=on loop.max_part=7";
 		clocks = <&dispsys_config MM_DISP_MUTEX0>;
 	};
 
+	smi_common: smi_common@1411f000 {
+		compatible = "mediatek,smi_common";
+		reg = <0 0x1411f000 0 0x1000>;
+		clocks = <&scpsys SCP_SYS_DIS>,
+			 <&mmsys_config_clk CLK_MM_SMI_COMMON>,
+			 <&mmsys_config_clk CLK_MM_SMI_GALS>,
+			 <&mmsys_config_clk CLK_MM_SMI_INFRA>,
+			 <&mmsys_config_clk CLK_MM_SMI_IOMMU>;
+		clock-names = "scp-dis",
+			      "mm-comm", "mm-gals", "mm-infra", "mm-iommu";
+		mediatek,smi-id = <21>;
+		mediatek,smi-cnt = <32>;
+		mmsys_config = <&mmsys_config_clk>;
+	};
+
 	smi_larb0: smi_larb0@14118000 {
 		compatible = "mediatek,smi_larb0", "mediatek,smi_larb";
 		reg = <0 0x14118000 0 0x1000>;
@@ -4669,21 +4684,6 @@ page_owner=on loop.max_part=7";
 		clocks = <&scpsys SCP_SYS_DIS>;
 		clock-names = "scp-dis";
 		mediatek,smi-id = <1>;
-	};
-
-	smi_common: smi_common@1411f000 {
-		compatible = "mediatek,smi_common";
-		reg = <0 0x1411f000 0 0x1000>;
-		clocks = <&scpsys SCP_SYS_DIS>,
-			 <&dispsys_config MM_SMI_COMMON>,
-			 <&dispsys_config MM_SMI_GALS>,
-			 <&dispsys_config MM_SMI_INFRA>,
-			 <&dispsys_config MM_SMI_IOMMU>;
-		clock-names = "scp-dis",
-			      "mm-comm", "mm-gals", "mm-infra", "mm-iommu";
-		mediatek,smi-id = <21>;
-		mediatek,smi-cnt = <32>;
-		mmsys_config = <&dispsys_config>;
 	};
 
 	disp_smi_subcom@14120000 {
@@ -4706,7 +4706,7 @@ page_owner=on loop.max_part=7";
 		compatible = "mediatek,mdp_smi_common", "mediatek,smi_common";
 		reg = <0 0x1f002000 0 0x1000>;
 		clocks = <&scpsys SCP_SYS_MDP>,
-			 <&mdpsys_config MDP_SMI1>, <&mdpsys_config MDP_SMI2>;
+			 <&mdpsys_config_clk CLK_MDP_SMI1>, <&mdpsys_config_clk CLK_MDP_SMI2>;
 		clock-names = "scp-mdp", "mdp-smi1", "mdp-smi2";
 		mediatek,smi-id = <22>;
 	};
@@ -4735,7 +4735,7 @@ page_owner=on loop.max_part=7";
 		compatible = "mediatek,sysram_smi_common",
 			     "mediatek,smi_common";
 		reg = <0 0x1f022000 0 0x1000>;
-		clocks = <&scpsys SCP_SYS_MDP>, <&mdpsys_config MDP_SMI0>;
+		clocks = <&scpsys SCP_SYS_MDP>, <&mdpsys_config_clk CLK_MDP_SMI0>;
 		clock-names = "scp-mdp", "mdp-smi0";
 		mediatek,smi-id = <23>;
 	};

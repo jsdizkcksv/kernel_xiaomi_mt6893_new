@@ -35,9 +35,9 @@
 #ifndef CONFIG_FPGA_EARLY_PORTING
 	vmmc-supply = <&mt_pmic_vemc_ldo_reg>;
 	vcore-supply = <&mt_pmic_vgpu11_buck_reg>;
-	clocks = <&infracfg_ao INFRACFG_AO_MSDC0_SRC_CLK_CG>,
-		<&infracfg_ao INFRACFG_AO_MSDC0_CG>,
-		<&infracfg_ao INFRACFG_AO_AES_UFSFDE_CG>;
+	clocks = <&infracfg_ao_clk INFRACFG_AO_MSDC0_SRC_CLK_CG>,
+		<&infracfg_ao_clk INFRACFG_AO_MSDC0_CG>,
+		<&infracfg_ao_clk INFRACFG_AO_AES_UFSFDE_CG>;
 	clock-names = "msdc0-clock", "msdc0-hclock", "msdc0-aes-clock";
 #endif
 };
@@ -74,8 +74,8 @@
 	vmmc-supply = <&mt_pmic_vmch_ldo_reg>;
 	vqmmc-supply = <&mt_pmic_vmc_ldo_reg>;
 
-	clocks = <&infracfg_ao INFRACFG_AO_MSDC1_SRC_CLK_CG>,
-			<&infracfg_ao INFRACFG_AO_MSDC1_CG>;
+	clocks = <&infracfg_ao_clk INFRACFG_AO_MSDC1_SRC_CLK_CG>,
+			<&infracfg_ao_clk INFRACFG_AO_MSDC1_CG>;
 	clock-names = "msdc1-clock", "msdc1-hclock";
 #endif
 };

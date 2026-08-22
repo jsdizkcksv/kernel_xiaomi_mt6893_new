@@ -840,6 +840,29 @@ page_owner=on loop.max_part=7";
 		interrupt-parent = <&gic>;
 	};
 
+	msdc0: msdc@11230000 {
+		compatible = "mediatek,msdc", "syscon";
+		reg = <0 0x11230000 0 0x10000>;
+		interrupts = <GIC_SPI 99 IRQ_TYPE_LEVEL_HIGH>;
+		#clock-cells = <1>;
+	};
+
+	msdc1: msdc@11240000{
+		compatible = "mediatek,msdc";
+		reg = <0 0x11240000 0 0x1000>;
+		interrupts = <GIC_SPI 103 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+	msdc0_top@11f50000 {
+		compatible = "mediatek,msdc0_top";
+		reg = <0 0x11f50000 0 0x1000>;
+	};
+
+	msdc1_top@11e10000 {
+		compatible = "mediatek,msdc1_top";
+		reg = <0 0x11e10000 0 0x1000>;
+	};
+
 	mmc0: mmc@11230000 {
 		compatible = "mediatek,mt6779-mmc";
 		reg = <0 0x11230000 0 0x10000>,
@@ -8411,6 +8434,7 @@ page_owner=on loop.max_part=7";
 #include "mediatek/mt6315_s7.dtsi"
 #include "mediatek/mt6315_s3.dtsi"
 #include "mediatek/mt6359p.dtsi"
+#include "mediatek/cust_mt6885_msdc.dtsi"
 #include "mediatek/mt6360_pd.dtsi"
 #ifdef CONFIG_MTK_ENABLE_GENIEZONE
 #include "mediatek/trusty.dtsi"

@@ -1038,3 +1038,23 @@
 #define CLK_TOP_MAINPLL_D5_D2	15
 #define CLK_TOP_MFG_SEL		210
 #define CLK_MFGCFG_BG3D		0
+
+/* MT6893 (4.19) APU_CONN clock IDs backported for iommu_v0 driver */
+#define CLK_APUC_AHB		0
+#define CLK_APUC_AXI		1
+#define CLK_APUC_ISP		2
+#define CLK_APUC_CAM_ADL	3
+#define CLK_APUC_IMG_ADL	4
+#define CLK_APUC_EMI_26M	5
+#define CLK_APUC_VPU_UDI	6
+#define CLK_APUC_EDMA_0		7
+#define CLK_APUC_EDMA_1		8
+#define CLK_APUC_EDMAL_0		9
+#define CLK_APUC_EDMAL_1		10
+#define CLK_APUC_MNOC		11
+#define CLK_APUC_TCM		12
+#define CLK_APUC_MD32		13
+#define CLK_APUC_IOMMU_0	14
+#define CLK_APUC_IOMMU_1	15
+#define CLK_APUC_MD32_32K	16
+#define CLK_APUC_NR_CLK		17

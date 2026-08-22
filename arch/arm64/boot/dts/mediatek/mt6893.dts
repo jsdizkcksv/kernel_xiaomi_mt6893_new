@@ -640,7 +640,7 @@ page_owner=on loop.max_part=7";
 	};
 
 	infracfg_ao: infracfg_ao@10001000 {
-		compatible = "mediatek,infracfg_ao", "syscon";
+		compatible = "mediatek,mt6893-infracfg_ao", "syscon", "simple-mfd", "mediatek,infracfg_ao";
 		reg = <0 0x10001000 0 0x1000>;
 		#clock-cells = <1>;
 	};
@@ -1090,10 +1090,10 @@ page_owner=on loop.max_part=7";
 		      <0 0x10028000 0 0x1000>;
 		reg-names = "pwrap","spi_mst";
 		interrupts = <GIC_SPI 220 IRQ_TYPE_LEVEL_HIGH>;
-		clocks = <&infracfg_ao INFRACFG_AO_PMIC_CG_AP>,
-			 <&infracfg_ao INFRACFG_AO_PMIC_CG_TMR>,
-			 <&topckgen TOP_MUX_PWRAP_ULPOSC>,
-			 <&topckgen TOP_OSC_D10>;
+		clocks = <&infracfg_ao CLK_IFRAO_PMIC_AP>,
+			 <&infracfg_ao CLK_IFRAO_PMIC_TMR>,
+			 <&topckgen CLK_TOP_PWRAP_ULPOSC_SEL>,
+			 <&topckgen CLK_TOP_OSC_D10>;
 		clock-names = "spi", "wrap", "ulposc", "ulposc_osc";
 
 		main_pmic: mt6359-pmic {
@@ -1542,10 +1542,10 @@ page_owner=on loop.max_part=7";
 			"mbox3";
 		#mbox-cells = <1>;
 		clocks = <&scpsys SCP_SYS_ADSP>, /* add ck cg later */
-			<&topckgen TOP_MUX_ADSP>,
-			<&clk26m>,
-			<&topckgen TOP_ADSPPLL_CK>,
-			<&topckgen TOP_MUX_SCP>;
+			<&topckgen CLK_TOP_ADSP_SEL>,
+			<&topckgen CLK_TOP_TCK_26M_MX9>,
+			<&topckgen CLK_TOP_ADSPPLL>,
+			<&topckgen CLK_TOP_SCP_SEL>;
 		clock-names = "scp_sys_adsp", /* add ck cg later */
 			"clk_top_adsp_sel",
 			"clk_top_clk26m",
@@ -6632,14 +6632,14 @@ page_owner=on loop.max_part=7";
 		interrupts = <GIC_SPI 221 IRQ_TYPE_LEVEL_HIGH>;
 		interrupt-names = "pmif_irq";
 		irq_event_en = <0x0 0x0 0x00300000 0x00000100 0x0>;
-		clocks = <&infracfg_ao INFRACFG_AO_PMIC_CG_AP>,
-			<&infracfg_ao INFRACFG_AO_PMIC_CG_TMR>,
-			<&topckgen TOP_MUX_PWRAP_ULPOSC>,
-			<&topckgen TOP_OSC_D10>,
-			<&clk26m>,
-			<&topckgen TOP_MUX_SPMI_MST>,
-			<&clk26m>,
-			<&topckgen TOP_OSC_D10>;
+		clocks = <&infracfg_ao CLK_IFRAO_PMIC_AP>,
+			<&infracfg_ao CLK_IFRAO_PMIC_TMR>,
+			<&topckgen CLK_TOP_PWRAP_ULPOSC_SEL>,
+			<&topckgen CLK_TOP_OSC_D10>,
+			<&topckgen CLK_TOP_TCK_26M_MX9>,
+			<&topckgen CLK_TOP_SPMI_MST_SEL>,
+			<&topckgen CLK_TOP_TCK_26M_MX9>,
+			<&topckgen CLK_TOP_OSC_D10>;
 		clock-names = "pmif_sys_ck",
 			"pmif_tmr_ck",
 			"pmif_clk_mux",

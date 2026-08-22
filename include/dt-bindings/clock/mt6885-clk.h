@@ -1058,3 +1058,17 @@
 #define CLK_APUC_IOMMU_1	15
 #define CLK_APUC_MD32_32K	16
 #define CLK_APUC_NR_CLK		17
+
+/* Backported from ares_4.19 include/dt-bindings/clock/mt6885-clk.h:
+ * 4.19 clk-mt6885.c registers topckgen/infracfg_ao clocks with these IDs,
+ * which differ from the old 4.14 numbering used in the rest of this header.
+ */
+#define CLK_IFRAO_PMIC_TMR		0
+#define CLK_IFRAO_PMIC_AP		1
+#define CLK_TOP_OSC_D10			112
+#define CLK_TOP_TCK_26M_MX9		100
+#define CLK_TOP_ADSPPLL			66
+#define CLK_TOP_SCP_SEL			191
+#define CLK_TOP_PWRAP_ULPOSC_SEL	222
+#define CLK_TOP_ADSP_SEL		242
+#define CLK_TOP_SPMI_MST_SEL		253
